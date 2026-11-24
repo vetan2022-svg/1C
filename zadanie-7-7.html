@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7.7 Практическая работа: запросы в консоли — 1С 8.3</title>
+<meta name="description" content="Решение практической работы 7.7 с пояснениями: запросы в консоли запросов 1С 8.3 — параметры, виртуальные таблицы, временные таблицы, соединения.">
+<style>
+  :root {
+    --blue: #1a73e8;
+    --blue-dark: #0d47a1;
+    --green: #2e7d32;
+    --teal: #00695c;
+    --orange: #ef6c00;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --line: #e5e7eb;
+    --yellow: #fff8e1;
+    --mint: #e8f5e9;
+    --sky: #e3f2fd;
+    --rose: #ffebee;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--blue); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+
+  header.hero {
+    background: linear-gradient(135deg, #004d40 0%, #00695c 55%, #26a69a 100%);
+    color: #fff;
+    padding: 44px 20px 36px;
+    text-align: center;
+  }
+  .hero h1 { margin: 0 0 12px; font-size: clamp(26px, 4.6vw, 40px); line-height: 1.25; }
+  .hero p.sub { margin: 0 auto 16px; max-width: 760px; font-size: 19px; opacity: .95; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .badge {
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.45);
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin: -24px auto 36px;
+    max-width: 940px;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0,105,92,.10);
+  }
+  nav.toc h2 { margin: 0 0 10px; font-size: 18px; }
+  nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 36px; }
+  nav.toc li { margin: 6px 0; break-inside: avoid; }
+  nav.toc a { text-decoration: none; font-weight: 600; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section { margin: 46px 0; }
+  h2.sec {
+    font-size: 29px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+    padding-bottom: 10px;
+    border-bottom: 4px solid var(--teal);
+    display: inline-block;
+  }
+  h3 { font-size: 21px; margin: 28px 0 8px; }
+  h4 { font-size: 18px; margin: 22px 0 6px; color: var(--teal); }
+  .lead { font-size: 19px; color: #374151; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin: 22px 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  }
+  .card h3 { margin-top: 0; }
+  .card.blue  { border-top: 6px solid var(--blue); }
+  .card.green { border-top: 6px solid var(--green); }
+  .card.orange{ border-top: 6px solid var(--orange); }
+  .card .emoji { font-size: 30px; }
+  a.card { text-decoration: none; color: inherit; display: block; }
+  a.card:hover { box-shadow: 0 8px 22px rgba(0,0,0,.10); }
+
+  table.cmp, table.result {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
+    margin: 20px 0;
+    font-size: 16px;
+  }
+  table.cmp th, table.cmp td, table.result th, table.result td { border: 1px solid var(--line); padding: 11px 14px; text-align: left; }
+  table.cmp th, table.result th { background: var(--teal); color: #fff; }
+  table.cmp tr:nth-child(even) td, table.result tr:nth-child(even) td { background: #f7fbfa; }
+  table.result td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .step {
+    display: flex;
+    gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin: 18px 0;
+    box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  }
+  .step-num {
+    flex: 0 0 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: #fff;
+    font-weight: 700;
+    font-size: 21px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-body { flex: 1; min-width: 0; }
+  .step-body h3 { margin-top: 0; }
+  .step-body p { margin: 8px 0; }
+
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 18px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 12px 0;
+  }
+  pre .cm { color: #7dd3a0; }
+  code {
+    background: #eceff1;
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 15px;
+    font-family: Consolas, "Courier New", monospace;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  kbd {
+    background: #eceff1;
+    border: 1px solid #cfd8dc;
+    border-bottom-width: 3px;
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  .note, .tip, .warn, .err {
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    border-left: 6px solid;
+  }
+  .note { background: var(--sky); border-color: var(--blue); }
+  .tip  { background: var(--mint); border-color: var(--green); }
+  .warn { background: var(--yellow); border-color: var(--orange); }
+  .err  { background: var(--rose); border-color: #c62828; }
+  .note strong:first-child, .tip strong:first-child, .warn strong:first-child, .err strong:first-child { display: block; margin-bottom: 4px; }
+
+  ul.clean { padding-left: 22px; }
+  ul.clean li { margin: 7px 0; }
+
+  .check {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--green);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 14px 0;
+  }
+  .check .tag {
+    display: inline-block;
+    background: var(--green);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+
+  details {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 12px 0;
+  }
+  details summary { cursor: pointer; font-weight: 600; font-size: 17px; }
+  details .inside { padding-top: 8px; }
+
+  footer {
+    background: #004d40;
+    color: #c8e6c9;
+    text-align: center;
+    padding: 28px 20px;
+    margin-top: 60px;
+    font-size: 15px;
+  }
+  footer a { color: #fff; }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    nav.toc ol { columns: 1; }
+    .step { flex-direction: column; gap: 10px; }
+    h2.sec { font-size: 23px; }
+  }
+  @media print {
+    header.hero { background: #fff; color: #000; }
+    pre { background: #f1f1f1; color: #000; border: 1px solid #ccc; }
+    .step, .card { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>7.7 Практическая работа<br>Запросы в консоли запросов</h1>
+    <p class="sub">Решение с пояснениями: параметры запроса, виртуальные таблицы, временные таблицы и соединения — шаг за шагом.</p>
+    <div class="badges">
+      <span class="badge">🧮 Задание 1: остатки номенклатуры</span>
+      <span class="badge">📦 Задание 2: временная таблица</span>
+      <span class="badge">1С:Предприятие 8.3 · YQL</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc wrap">
+  <h2>📚 Содержание</h2>
+  <ol>
+    <li><a href="#goals">Цели работы</a></li>
+    <li><a href="#prep">Подготовка: консоль и параметры</a></li>
+    <li><a href="#task1">Задание 1: остатки с параметрами</a></li>
+    <li><a href="#task2">Задание 2: временная таблица</a></li>
+    <li><a href="#errors">Частые ошибки</a></li>
+    <li><a href="#cheatsheet">Шпаргалка по синтаксису</a></li>
+  </ol>
+</nav>
+
+<main class="wrap">
+
+  <!-- ============ Цели ============ -->
+  <section id="goals">
+    <h2 class="sec">1. Цели работы</h2>
+    <p class="lead">Попрактиковаться в написании запросов в консоли запросов и научиться:</p>
+    <div class="cards">
+      <div class="card blue"><div class="emoji">🔗</div><h3>Соединения</h3><p>Создавать и настраивать соединения между таблицами (<code>ВНУТРЕННЕЕ СОЕДИНЕНИЕ … ПО …</code>).</p></div>
+      <div class="card green"><div class="emoji">🎛</div><h3>Параметры</h3><p>Зависеть от заданных параметров: <code>&amp;Дата</code>, <code>&amp;Склад</code>, <code>&amp;ВидЦены</code>.</p></div>
+      <div class="card orange"><div class="emoji">▦</div><h3>Виртуальные таблицы</h3><p>Ставить отборы прямо в параметрах виртуальных таблиц: <code>Остатки(&amp;Дата, Склад = &amp;Склад)</code>.</p></div>
+    </div>
+    <p><strong>Что делаем:</strong> 1) получение номенклатуры и её остатков запросом; 2) использование временной таблицы в отборе по остаткам.</p>
+  </section>
+
+  <!-- ============ Подготовка ============ -->
+  <section id="prep">
+    <h2 class="sec">2. Подготовка: консоль и параметры</h2>
+
+    <div class="note">
+      <strong>📌 Где взять консоль запросов</strong>
+      Обычно: <em>Администрирование → Сервис → Консоль запросов</em> (в некоторых конфигурациях пункт называется просто «Консоль запросов» или открывается внешней обработкой). Окно состоит из текста запроса слева и дерева объектов конфигурации справа — из него можно вставлять имена таблиц двойным щелчком.
+    </div>
+
+    <h3>Как задать параметры запроса</h3>
+    <ul class="clean">
+      <li>В тексте напишите обращение к параметру: <code>&amp;Дата</code>, <code>&amp;Склад</code>, <code>&amp;ВидЦены</code> (символ <code>&amp;</code> обязателен).</li>
+      <li>Откройте окно параметров консоли (кнопка <strong>«Параметры запроса»</strong> на панели — часто с иконкой <code>&amp;</code>; в некоторых версиях это отдельная вкладка справа).</li>
+      <li>Добавьте параметр, укажите <strong>Тип</strong> (Дата, СправочникСсылка.Склады, СправочникСсылка.ВидыЦен…) и <strong>Значение</strong>.</li>
+      <li>Нажмите <strong>Выполнить</strong> (клавиша <kbd>F5</kbd> в большинстве консолей).</li>
+    </ul>
+
+    <div class="tip">
+      <strong>💡 Совет</strong>
+      Тип параметра должен совпадать с типом поля, с которым он сравнивается. Сравниваете со складом — тип «СправочникСсылка.Склады». Не тот тип → ошибка приведения типов.
+    </div>
+  </section>
+
+  <!-- ============ Задание 1 ============ -->
+  <section id="task1">
+    <h2 class="sec">3. Задание 1. Номенклатура и её остатки</h2>
+    <p class="lead">Менеджер просит: вывести остатки товаров <strong>на текущую дату</strong> (колонки «Код», «Наименование», «Остаток»), а позже понадобится то же самое <strong>на указанную дату</strong> и <strong>по указанному складу</strong>. Решаем по шагам.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Сначала — просто номенклатура с остатками</h3>
+        <p>Соединяем справочник номенклатуры с виртуальной таблицей остатков. Оставляем только те позиции, у которых остаток положительный.</p>
+<pre><code>ВЫБРАТЬ
+    Номенклатура.Код КАК Код,
+    Номенклатура.Наименование КАК Наименование,
+    Остатки.КоличествоОстаток КАК Остаток
+ИЗ
+    Справочник.Номенклатура КАК Номенклатура
+        ВНУТРЕННЕЕ СОЕДИНЕНИЕ РегистрНакопления.ТоварыНаСкладах.Остатки КАК Остатки
+        ПО Номенклатура.Ссылка = Остатки.Номенклатура
+ГДЕ
+    Остатки.КоличествоОстаток &gt; 0</code></pre>
+        <h4>Пояснения</h4>
+        <ul class="clean">
+          <li><strong><code>ИЗ Справочник.Номенклатура</code></strong> — откуда берём строки. Псевдоним <code>КАК Номенклатура</code> — короткое имя таблицы в тексте.</li>
+          <li><strong><code>ВНУТРЕННЕЕ СОЕДИНЕНИЕ … ПО Номенклатура.Ссылка = Остатки.Номенклатура</code></strong> — «мостик» между таблицами: строка справочника соединяется с её строкой остатков. Внутреннее соединение оставляет <em>только совпавшие</em> пары — то есть только номенклатуру, по которой остатки есть.</li>
+          <li><strong><code>ГДЕ … &gt; 0</code></strong> — отсекает нулевые и отрицательные остатки.</li>
+        </ul>
+        <div class="warn">
+          <strong>⚠️ Так пока не сработает для «суммы по всем складам»</strong>
+          Виртуальная таблица <code>Остатки()</code> выдаёт <em>отдельную строку на каждый склад</em>. Если на двух складах по 3 шт — вы увидите две строки по 3, а не одну по 6. Исправляем на следующем шаге.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Суммируем остатки по всем складам</h3>
+        <p>Добавляем <code>СУММА(...)</code> и группировку — теперь одна строка на номенклатуру со складовым итогом.</p>
+<pre><code>ВЫБРАТЬ
+    Номенклатура.Код КАК Код,
+    Номенклатура.Наименование КАК Наименование,
+    СУММА(Остатки.КоличествоОстаток) КАК Остаток
+ИЗ
+    Справочник.Номенклатура КАК Номенклатура
+        ВНУТРЕННЕЕ СОЕДИНЕНИЕ РегистрНакопления.ТоварыНаСкладах.Остатки КАК Остатки
+        ПО Номенклатура.Ссылка = Остатки.Номенклатура
+СГРУППИРОВАТЬ ПО
+    Номенклатура.Ссылка,
+    Номенклатура.Код,
+    Номенклатура.Наименование
+ИМЕЮЩИЕ
+    СУММА(Остатки.КоличествоОстаток) &gt; 0</code></pre>
+        <h4>Пояснения</h4>
+        <ul class="clean">
+          <li><strong><code>СГРУППИРОВАТЬ ПО</code></strong> — складываем «внутри» каждой номенклатуры. Все колонки без <code>СУММА(...)</code> обязаны попасть в группировку — иначе ошибка «поле не входит в список группировки».</li>
+          <li><strong><code>ИМЕЮЩИЕ</code></strong> — это фильтр <em>после</em> суммирования (как <code>ГДЕ</code>, только для агрегатов). В <code>ГДЕ</code> писать <code>СУММА(...) &gt; 0</code> нельзя — там агрегатов ещё не существует.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Добавляем параметры: период и склад</h3>
+        <p>Менеджер прав: данные нужны «на дату» и «по складу». Параметры подставляются <strong>в параметры виртуальной таблицы</strong> — это и есть главный приём работы с <code>Остатки(...)</code>.</p>
+<pre><code>ВЫБРАТЬ
+    Номенклатура.Код КАК Код,
+    Номенклатура.Наименование КАК Наименование,
+    СУММА(Остатки.КоличествоОстаток) КАК Остаток
+ИЗ
+    Справочник.Номенклатура КАК Номенклатура
+        ВНУТРЕННЕЕ СОЕДИНЕНИЕ РегистрНакопления.ТоварыНаСкладах.Остатки(&amp;Дата, Склад = &amp;Склад) КАК Остатки
+        ПО Номенклатура.Ссылка = Остатки.Номенклатура
+СГРУППИРОВАТЬ ПО
+    Номенклатура.Ссылка,
+    Номенклатура.Код,
+    Номенклатура.Наименование
+ИМЕЮЩИЕ
+    СУММА(Остатки.КоличествоОстаток) &gt; 0</code></pre>
+        <h4>Пояснения</h4>
+        <ul class="clean">
+          <li><strong><code>Остатки(&amp;Дата, Склад = &amp;Склад)</code></strong> — два параметра виртуальной таблицы:
+            <ul>
+              <li><code>&amp;Дата</code> — <em>на какой момент</em> считать остаток. «На начало месяца» → поставьте <code>01.11.2026</code>; «на текущий момент» → сегодняшняя дата. Без параметра остатки берутся «на сейчас».</li>
+              <li><code>Склад = &amp;Склад</code> — отбор по <strong>измерению</strong> виртуальной таблицы. По совету курса отборы по измерениям задаются именно здесь, в скобках, а не в <code>ГДЕ</code>.</li>
+            </ul>
+          </li>
+          <li><strong>Дата — только через параметр.</strong> Дату виртуальной таблицы нельзя «поймать» в <code>ГДЕ</code>: без неё вы получите остатки на текущий момент, а не на нужную дату.</li>
+          <li><strong>Склад в <code>ГДЕ</code> формально можно</strong> (он есть среди колонок результата), но для оценки и для скорости правильнее — в параметрах виртуальной таблицы.</li>
+        </ul>
+        <div class="note">
+          <strong>📌 Как быть с «остатками по всем складам»?</strong>
+          Если склад конкретный — используйте <code>Остатки(&amp;Дата, Склад = &amp;Склад)</code>. Если нужно «по всем складам» — вызывайте <code>Остатки(&amp;Дата)</code> без отбора (параметр <code>&amp;Склад</code> тогда не нужен). Так вы получите и «как у менеджера на сегодня», и «на 1-е число по нужному складу» одним и тем же запросом — меняются только значения параметров в консоли.
+        </div>
+        <h4>Как задать значения в консоли</h4>
+        <ul class="clean">
+          <li><code>&amp;Дата</code> → Тип: <strong>Дата</strong>, Значение: <code>24.11.2026</code> (или <code>01.11.2026</code> для начала месяца).</li>
+          <li><code>&amp;Склад</code> → Тип: <strong>СправочникСсылка.Склады</strong>, Значение: выбрать нужный склад из списка.</li>
+          <li>Нажать <strong>Выполнить</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Примерный вид результата</h3>
+    <table class="result">
+      <tr><th>Код</th><th>Наименование</th><th>Остаток</th></tr>
+      <tr><td>000000001</td><td>Galaxy Moon X10</td><td class="num">5</td></tr>
+      <tr><td>000000003</td><td>Crystal Whirl Max15</td><td class="num">10</td></tr>
+    </table>
+
+    <div class="check">
+      <span class="tag">Самопроверка</span>
+      <p><strong>Что оценивается → что проверить:</strong></p>
+      <ul class="clean">
+        <li>✅ В выводе есть «Код», «Наименование», «Остаток» — и только номенклатура с ненулевым остатком;</li>
+        <li>✅ Данные корректны: суммы по складам сходятся (можно сверить с отчётом «Остатки товаров»);</li>
+        <li>✅ Запрос выполняется <em>при любых</em> значениях <code>&amp;Дата</code> и <code>&amp;Склад</code> — значит, параметры установлены правильно.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Задание 2 ============ -->
+  <section id="task2">
+    <h2 class="sec">4. Задание 2. Временная таблица в отборе по остаткам</h2>
+    <p class="lead">Теперь один запрос из <strong>двух пакетов</strong>: первый запоминает номенклатуру с «оптовой» ценой во <strong>временную таблицу</strong>, второй берёт остатки <strong>только по этой номенклатуре</strong> и добавляет цену в вывод.</p>
+
+    <div class="note">
+      <strong>📌 Что такое «пакеты запроса»</strong>
+      Текст запроса — это последовательность операторов, разделённых точкой с запятой <code>;</code>. Результат пакета №1 (временная таблица) доступен в пакете №2. Временная таблица живёт <strong>только во время выполнения</strong> — это «черновик», который не сохраняется в базе.
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Пакет 1: номенклатура с оптовой ценой → во временную таблицу</h3>
+<pre><code><span class="cm">// Пакет 1 — номенклатура, у которой на текущую дату есть цена вида «Оптовая»</span>
+ВЫБРАТЬ
+    Цены.Номенклатура КАК Номенклатура,
+    Цены.Цена КАК ЦенаОптовая
+ПОМЕСТИТЬ втНоменклатураСОптовойЦеной
+ИЗ
+    РегистрСведений.ЦеныНоменклатуры.СрезПоследних(&amp;Дата, ВидЦены = &amp;ВидЦены) КАК Цены
+ГДЕ
+    Цены.Цена &gt; 0
+;</code></pre>
+        <h4>Пояснения</h4>
+        <ul class="clean">
+          <li><strong><code>СрезПоследних(&amp;Дата, ВидЦены = &amp;ВидЦены)</code></strong> — виртуальная таблица: «последняя цена на дату». Оба отбора — дата и вид цены — задаются <strong>в параметрах виртуальной таблицы</strong>:
+            <ul>
+              <li><code>&amp;Дата</code> — на какую дату смотрим (сегодня → текущая дата);</li>
+              <li><code>ВидЦены = &amp;ВидЦены</code> — фильтр по измерению «Вид цен»; в параметрах консоли задайте <code>&amp;ВидЦены</code> = элемент <strong>«Оптовая»</strong>.</li>
+            </ul>
+          </li>
+          <li><strong><code>ПОМЕСТИТЬ втНоменклатураСОптовойЦеной</code></strong> — результат кладём во временную таблицу. Имя «вт…» — договорённость разработчиков, не требование языка.</li>
+          <li><strong><code>ГДЕ Цена &gt; 0</code></strong> — гарантия «цена действительно установлена». Если в вашей базе нулевых цен не бывает, условие можно убрать.</li>
+          <li><strong><code>;</code> в конце</strong> — обязательный разделитель пакетов! Без него пакет 2 «не увидит» временную таблицу.</li>
+        </ul>
+        <div class="tip">
+          <strong>💡 Если в базе иначе</strong>
+          Когда вид цены — не отдельный справочник, а перечисление, параметр <code>&amp;ВидЦены</code> просто получит другую типизацию. Ещё вариант «без параметра»: <code>ВидЦены = ЗНАЧЕНИЕ(Справочник.ВидыЦен.Оптовая)</code> — но параметр гибче: одной настройкой консоли переключаетесь с «Оптовой» на «Розничную».
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Пакет 2: остатки + отбор по временной таблице + цена в выводе</h3>
+<pre><code><span class="cm">// Пакет 2 — остатки только по номенклатуре из пакета 1, с оптовой ценой</span>
+ВЫБРАТЬ
+    Номенклатура.Наименование КАК Наименование,
+    Остатки.Остаток КАК Остаток,
+    ВТНоменклатуры.ЦенаОптовая КАК ЦенаОптовая
+ИЗ
+    втНоменклатураСОптовойЦеной КАК ВТНоменклатуры
+        ВНУТРЕННЕЕ СОЕДИНЕНИЕ (ВЫБРАТЬ
+                Остатки.Номенклатура КАК Номенклатура,
+                СУММА(Остатки.КоличествоОстаток) КАК Остаток
+            ИЗ
+                РегистрНакопления.ТоварыНаСкладах.Остатки(&amp;Дата) КАК Остатки
+            СГРУППИРОВАТЬ ПО
+                Остатки.Номенклатура) КАК Остатки
+        ПО ВТНоменклатуры.Номенклатура = Остатки.Номенклатура
+ГДЕ
+    Остатки.Остаток &gt; 0
+УПОРЯДОЧИТЬ ПО
+    Наименование</code></pre>
+        <h4>Пояснения</h4>
+        <ul class="clean">
+          <li><strong>Из чего состоит <code>ИЗ</code>:</strong> слева — временная таблица из пакета 1 (псевдоним <code>ВТНоменклатуры</code>), справа в скобках — <strong>подзапрос</strong>, который собирает остатки: сначала <code>СУММА</code> по складам, как в задании 1.</li>
+          <li><strong><code>ПО ВТНоменклатуры.Номенклатура = Остатки.Номенклатура</code></strong> — и есть «отбор по списку номенклатуры из первого пакета»: внутреннее соединение оставит только те остатки, у которых номенклатура «есть в ценовой таблице». Без <code>ПО</code> соединение не заработает (да и синтаксически не соберётся).</li>
+          <li><strong>ЦенаОптовая в выводе</strong> — пришла из левой таблицы соединения; её же можно использовать для сортировки или фильтра (<code>ГДЕ ВТНоменклатуры.ЦенаОптовая &gt; 1000</code>).</li>
+          <li><strong><code>&amp;Дата</code> используется в обоих пакетах</strong> — один параметр на весь запрос; задаётся один раз в консоли.</li>
+        </ul>
+        <div class="warn">
+          <strong>⚠️ Альтернатива вместо соединения</strong>
+          Шаг 3 задания можно закрыть и через отбор «<code>В (…)</code>»:<br>
+          <code>ГДЕ Остатки.Номенклатура В (ВЫБРАТЬ Номенклатура ИЗ втНоменклатураСОптовойЦеной)</code><br>
+          Но соединение — основной способ, который проверяется по критериям («Правильность настройки соединения таблиц»), поэтому пишем через <code>ВНУТРЕННЕЕ СОЕДИНЕНИЕ … ПО</code>.
+        </div>
+      </div>
+    </div>
+
+    <h3>Примерный вид результата</h3>
+    <table class="result">
+      <tr><th>Наименование</th><th>Остаток</th><th>ЦенаОптовая</th></tr>
+      <tr><td>Galaxy Moon X10</td><td class="num">5</td><td class="num">100 000</td></tr>
+      <tr><td>Oil Storm Pro12</td><td class="num">1</td><td class="num">80 000</td></tr>
+      <tr><td>Crystal Whirl Max15</td><td class="num">10</td><td class="num">75 000</td></tr>
+      <tr><td>Короб упаковочный</td><td class="num">2</td><td class="num">25</td></tr>
+    </table>
+
+    <div class="check">
+      <span class="tag">Самопроверка</span>
+      <p><strong>Что оценивается → что проверить:</strong></p>
+      <ul class="clean">
+        <li>✅ В выводе ровно три колонки: «Наименование», «Остаток», «ЦенаОптовая»;</li>
+        <li>✅ Нет позиций без оптовой цены и без остатка (внутреннее соединение + <code>&gt; 0</code>);</li>
+        <li>✅ Соединение настроено по «Номенклатура = Номенклатура» (не по наименованию строкой!);</li>
+        <li>✅ Параметры <code>&amp;Дата</code> и <code>&amp;ВидЦены</code> заданы, запрос выполняется без ошибок.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Ошибки ============ -->
+  <section id="errors">
+    <h2 class="sec">5. Частые ошибки</h2>
+
+    <details>
+      <summary>❌ «Параметр &amp;Дата не задан» (или &amp;Склад, &amp;ВидЦены)</summary>
+      <div class="inside">Параметр есть в тексте, но не задан в окне параметров консоли. Откройте «Параметры запроса», добавьте его, укажите тип и значение, выполните снова.</div>
+    </details>
+
+    <details>
+      <summary>❌ «Ошибочное выражение: поле не входит в список группировки»</summary>
+      <div class="inside">Вы используете <code>СУММА(...)</code>, но не добавили <code>СГРУППИРОВАТЬ ПО</code>. Все колонки без агрегатной функции должны быть в списке группировки.</div>
+    </details>
+
+    <details>
+      <summary>❌ «В контексте агрегатных функций можно использовать только агрегатные функции»</summary>
+      <div class="inside"><code>СУМма(...) &gt; 0</code> написано в <code>ГДЕ</code>. Перенесите условие в <code>ИМЕЮЩИЕ</code> — оно применяется после группировки.</div>
+    </details>
+
+    <details>
+      <summary>❌ Дубли строк: одна номенклатура несколько раз</summary>
+      <div class="inside">Забыли <code>СГРУППИРОВАТЬ ПО</code> — виртуальная таблица выдаёт строку на каждый склад. Либо соединение написано «в лоб» без критерия <code>ПО</code> (тогда каждая строка с каждой — так нельзя).</div>
+    </details>
+
+    <details>
+      <summary>❌ «Имя таблицы не определено: втНоменклатураСОптовойЦеной»</summary>
+      <div class="inside">Пакеты не разделены <code>;</code> или временная таблица создана <em>после</em> того, как к ней обратились. Порядок: сначала <code>ПОМЕСТИТЬ … ;</code>, потом пакет, который из неё читает. Имя должно совпадать символ в символ.</div>
+    </details>
+
+    <details>
+      <summary>❌ Остатки «на сейчас», хотя нужна дата в прошлом</summary>
+      <div class="inside">Дата попала в <code>ГДЕ</code> или не попала в <code>Остатки(...)</code>. Дата виртуальной таблицы задаётся только в её параметрах: <code>Остатки(&amp;Дата, ...)</code>.</div>
+    </details>
+
+    <details>
+      <summary>❌ Ошибка приведения типов при сравнении со складом/видом цен</summary>
+      <div class="inside">У параметра неверный тип (например, «Строка» вместо «СправочникСсылка.Склады»). Тип параметра должен совпадать с типом измерения.</div>
+    </details>
+  </section>
+
+  <!-- ============ Шпаргалка ============ -->
+  <section id="cheatsheet">
+    <h2 class="sec">6. Шпаргалка по синтаксису</h2>
+    <table class="cmp">
+      <tr><th>Что нужно</th><th>Как пишется</th></tr>
+      <tr><td>Выбрать поля</td><td><code>ВЫБРАТЬ Поле1 КАК Имя, … ИЗ Таблица КАК Т</code></td></tr>
+      <tr><td>Соединить две таблицы</td><td><code>… ВНУТРЕННЕЕ СОЕДИНЕНИЕ Т2 КАК Т2 ПО Т1.Поле = Т2.Поле</code></td></tr>
+      <tr><td>Отбор «где»</td><td><code>ГДЕ Условие</code></td></tr>
+      <tr><td>Сумма по группам</td><td><code>СГРУППИРОВАТЬ ПО …</code> + <code>ИМЕЮЩИЕ СУММА(Поле) &gt; 0</code></td></tr>
+      <tr><td>Параметр</td><td><code>&amp;Имя</code> в тексте + окно «Параметры запроса»</td></tr>
+      <tr><td>Остатки на дату / по складу</td><td><code>РегистрНакопления.ТоварыНаСкладах.Остатки(&amp;Дата, Склад = &amp;Склад)</code></td></tr>
+      <tr><td>Цена на дату по виду цен</td><td><code>РегистрСведений.ЦеныНоменклатуры.СрезПоследних(&amp;Дата, ВидЦены = &amp;ВидЦены)</code></td></tr>
+      <tr><td>Временная таблица</td><td><code>ВЫБРАТЬ … ПОМЕСТИТЬ втИмя … ;</code></td></tr>
+      <tr><td>Отбор по списку из временной таблицы</td><td><code>ВНУТРЕННЕЕ СОЕДИНЕНИЕ втИмя КАК ВТ ПО … = ВТ.Номенклатура</code></td></tr>
+      <tr><td>Порядок строк</td><td><code>УПОРЯДОЧИТЬ ПО Поле</code></td></tr>
+    </table>
+
+    <div class="tip">
+      <strong>💡 Как не ошибиться с именами таблиц</strong>
+      Не перепечатывайте имена «на глаз»: в консоли запросов слева/справа есть дерево объектов конфигурации — откройте <em>Регистры накопления → ТоварыНаСкладах → Остатки</em> и вставьте имя двойным щелчком. Если в вашей базе регистр называется иначе (например, <code>ОстаткиТоваров</code>) — подставьте своё имя, логика запроса не изменится.
+    </div>
+
+    <div class="cards">
+      <a class="card green" href="index.html">
+        <div class="emoji">📘</div>
+        <h3>Вернуться к учебнику</h3>
+        <p>«1С 8.3: как создавать отчёты» — в Конфигураторе и в пользовательском режиме.</p>
+      </a>
+      <div class="card orange">
+        <div class="emoji">🎯</div>
+        <h3>Итог работы</h3>
+        <p>Два запроса готовы: с параметрами (дата, склад, вид цены), с соединением и временной таблицей. Повторите их «с нуля» в консоли — без подсказок, это лучшая проверка себя.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>7.7 Практическая работа: запросы в консоли</strong> — решение с пояснениями</p>
+  <p>Материалы курса · собрано с помощью GitHub Actions · <a href="https://github.com/vetan2022-svg/1C">vetan2022-svg/1C</a></p>
+</footer>
+
+</body>
+</html>

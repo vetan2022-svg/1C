@@ -1,0 +1,132 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
+      deploy_allowed: ${{ steps.pages.outputs.allowed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Проверяем две вещи:
+      # 1) включён ли GitHub Pages (создание сайта Pages требует прав администратора,
+      #    поэтому включается он один раз вручную: Settings -> Pages -> Source: GitHub Actions);
+      # 2) разрешена ли текущая ветка для деплоя в environment github-pages
+      #    (у среды может быть защита веток, например только main).
+      - name: Check GitHub Pages and deploy permissions
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="${GITHUB_REF_NAME}"
+
+          enabled="false"
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
+            enabled="true"
+          fi
+
+          allowed="false"
+          if [ "$enabled" != "true" ]; then
+            allowed="false"
+          else
+            env_json="$(gh api "repos/${GITHUB_REPOSITORY}/environments/github-pages" 2>/dev/null || true)"
+            if [ -z "$env_json" ] || [ "$env_json" = "null" ]; then
+              # Среда не читается или не существует: деплой пытаемся только с main,
+              # чтобы не ломать прогон на рабочих ветках.
+              [ "$branch" = "main" ] && allowed="true"
+            else
+              custom="$(printf '%s' "$env_json" | jq -r '.deployment_branch_policy.custom_branch_policies // false')"
+              if [ "$custom" != "true" ]; then
+                allowed="true"
+              else
+                patterns="$(gh api "repos/${GITHUB_REPOSITORY}/environments/github-pages/deployment-branch-policies" --jq '.branch_policies[].name' 2>/dev/null || true)"
+                if [ -n "$patterns" ]; then
+                  while IFS= read -r p; do
+                    [ -z "$p" ] && continue
+                    # shellcheck disable=SC2053
+                    if [[ "$branch" == $p ]]; then allowed="true"; break; fi
+                  done <<< "$patterns"
+                fi
+              fi
+            fi
+          fi
+
+          echo "enabled=${enabled}" >> "$GITHUB_OUTPUT"
+          echo "allowed=${allowed}" >> "$GITHUB_OUTPUT"
+
+          echo "GitHub Pages: ${enabled}; branch '${branch}': deploy_allowed=${allowed}"
+          if [ "$enabled" = "true" ] && [ "$allowed" != "true" ]; then
+            echo "::warning::Branch '${branch}' is not allowed by environment github-pages - deploy skipped. Allow it: Settings -> Environments -> github-pages -> Deployment branches"
+          fi
+          if [ "$enabled" != "true" ]; then
+            echo "::warning::GitHub Pages is not enabled. Enable it: Settings -> Pages -> Source: GitHub Actions"
+          fi
+
+      - name: Build the textbook
+        run: bash tools/build.sh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-dist
+          path: dist/
+          retention-days: 30
+
+      - name: Upload Pages artifact
+        if: steps.pages.outputs.enabled == 'true' && steps.pages.outputs.allowed == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## 📚 Сборка сайта"
+            echo ""
+            echo "| Параметр | Значение |"
+            echo "|---|---|"
+            echo "| Страницы | $(ls dist/*.html | tr '\n' ' ') |"
+            echo "| Скриншотов | $(find assets/img -type f | wc -l) |"
+            echo "| Артефакт | \`site-dist\` |"
+            if [ "${{ steps.pages.outputs.enabled }}" != "true" ]; then
+              echo "| GitHub Pages | не включён ⚠️ — Settings → Pages → Source: GitHub Actions |"
+            elif [ "${{ steps.pages.outputs.allowed }}" != "true" ]; then
+              echo "| Деплой | пропущен: ветка `${GITHUB_REF_NAME}` не разрешена средой \`github-pages\` ⚠️ |"
+            else
+              echo "| Деплой | выполняется ✅ |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: needs.build.outputs.pages_enabled == 'true' && needs.build.outputs.deploy_allowed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

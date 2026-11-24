@@ -1,0 +1,7 @@
+# Папка сборки (создаётся GitHub Actions)
+dist/
+
+# Локальный мусор
+*.log
+.DS_Store
+Thumbs.db
