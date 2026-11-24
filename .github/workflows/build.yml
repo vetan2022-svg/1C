@@ -1,0 +1,90 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # GitHub Pages можно включить только вручную в настройках репозитория
+      # (Settings → Pages → Source: GitHub Actions): создание сайта Pages
+      # требует прав администратора, которых нет у GITHUB_TOKEN.
+      - name: Check GitHub Pages status
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "GitHub Pages enabled - deploy will run"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GitHub Pages is not enabled. Deploy skipped. Enable it: Settings -> Pages -> Source: GitHub Actions"
+          fi
+
+      - name: Build the textbook
+        run: bash tools/build.sh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: dist/
+          retention-days: 30
+
+      - name: Upload Pages artifact
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## 📚 Сборка учебника по 1С 8.3"
+            echo ""
+            echo "| Параметр | Значение |"
+            echo "|---|---|"
+            echo "| Страница | \`index.html\` |"
+            echo "| Скриншотов | $(find assets/img -type f | wc -l) |"
+            echo "| Сборка | \`dist/\` → артефакт \`site-dist\` |"
+            if [ "${{ steps.pages.outputs.enabled }}" = "true" ]; then
+              echo "| GitHub Pages | включён ✅ — выполняется деплой |"
+            else
+              echo "| GitHub Pages | не включён ⚠️ — деплой пропущен (Settings → Pages → Source: GitHub Actions) |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: needs.build.outputs.pages_enabled == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

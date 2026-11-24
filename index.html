@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1С 8.3: Как создавать отчёты — учебник для пятого класса</title>
+<meta name="description" content="Простой учебник по 1С:Предприятие 8.3: как создавать отчёты в Конфигураторе и в пользовательском режиме. Для пятого класса, со скриншотами и заданиями.">
+<style>
+  :root {
+    --blue: #1a73e8;
+    --blue-dark: #0d47a1;
+    --green: #2e7d32;
+    --orange: #ef6c00;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --line: #e5e7eb;
+    --yellow: #fff8e1;
+    --mint: #e8f5e9;
+    --sky: #e3f2fd;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--blue); }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- Hero ---------- */
+  header.hero {
+    background: linear-gradient(135deg, #0d47a1 0%, #1a73e8 55%, #42a5f5 100%);
+    color: #fff;
+    padding: 48px 20px 40px;
+    text-align: center;
+  }
+  .hero h1 { margin: 0 0 12px; font-size: clamp(28px, 5vw, 44px); line-height: 1.2; }
+  .hero p.sub { margin: 0 auto 18px; max-width: 700px; font-size: 19px; opacity: .95; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 26px; }
+  .badge {
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.45);
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+  .hero .cover {
+    max-width: 560px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.3);
+  }
+
+  /* ---------- TOC ---------- */
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin: -28px auto 36px;
+    max-width: 940px;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(13,71,161,.08);
+  }
+  nav.toc h2 { margin: 0 0 10px; font-size: 18px; }
+  nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 36px; }
+  nav.toc li { margin: 6px 0; break-inside: avoid; }
+  nav.toc a { text-decoration: none; font-weight: 600; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  /* ---------- Sections ---------- */
+  section { margin: 46px 0; }
+  h2.sec {
+    font-size: 30px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+    padding-bottom: 10px;
+    border-bottom: 4px solid var(--blue);
+    display: inline-block;
+  }
+  h3 { font-size: 21px; margin: 28px 0 8px; }
+  .lead { font-size: 19px; color: #374151; }
+
+  /* ---------- Cards ---------- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin: 22px 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  }
+  .card h3 { margin-top: 0; }
+  .card.blue  { border-top: 6px solid var(--blue); }
+  .card.green { border-top: 6px solid var(--green); }
+  .card.orange{ border-top: 6px solid var(--orange); }
+  .card .emoji { font-size: 30px; }
+
+  /* ---------- Comparison table ---------- */
+  table.cmp {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
+    margin: 20px 0;
+    font-size: 16px;
+  }
+  table.cmp th, table.cmp td { border: 1px solid var(--line); padding: 12px 14px; text-align: left; vertical-align: top; }
+  table.cmp th { background: var(--blue); color: #fff; font-size: 16px; }
+  table.cmp tr:nth-child(even) td { background: #f9fbff; }
+
+  /* ---------- Steps ---------- */
+  .step {
+    display: flex;
+    gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin: 18px 0;
+    box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  }
+  .step-num {
+    flex: 0 0 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-body { flex: 1; min-width: 0; }
+  .step-body h3 { margin-top: 0; }
+  .step-body p { margin: 8px 0; }
+  kbd {
+    background: #eceff1;
+    border: 1px solid #cfd8dc;
+    border-bottom-width: 3px;
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  code {
+    background: #eceff1;
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 15px;
+    font-family: Consolas, "Courier New", monospace;
+  }
+
+  /* ---------- Figures ---------- */
+  figure {
+    margin: 16px 0 4px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  figure img { border-radius: 8px; border: 1px solid #dfe3e8; }
+  figcaption {
+    font-size: 15px;
+    color: var(--muted);
+    padding: 8px 6px 2px;
+    text-align: center;
+  }
+
+  /* ---------- Callouts ---------- */
+  .note, .tip, .warn {
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    border-left: 6px solid;
+  }
+  .note { background: var(--sky); border-color: var(--blue); }
+  .tip  { background: var(--mint); border-color: var(--green); }
+  .warn { background: var(--yellow); border-color: var(--orange); }
+  .note strong:first-child, .tip strong:first-child, .warn strong:first-child { display: block; margin-bottom: 4px; }
+
+  /* ---------- Tasks ---------- */
+  .task {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--green);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 14px 0;
+  }
+  .task .tag {
+    display: inline-block;
+    background: var(--green);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+
+  /* ---------- Quiz ---------- */
+  details.quiz {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 12px 0;
+  }
+  details.quiz summary { cursor: pointer; font-weight: 600; font-size: 17px; }
+  details.quiz .answer {
+    background: var(--mint);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    color: #1b5e20;
+  }
+
+  /* ---------- Glossary ---------- */
+  dl.gloss { margin: 0; }
+  dl.gloss div {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  dl.gloss dt { font-weight: 700; color: var(--blue-dark); font-size: 17px; }
+  dl.gloss dd { margin: 4px 0 0; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    background: #0d47a1;
+    color: #cfe3ff;
+    text-align: center;
+    padding: 28px 20px;
+    margin-top: 60px;
+    font-size: 15px;
+  }
+  footer a { color: #fff; }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    nav.toc ol { columns: 1; }
+    .step { flex-direction: column; gap: 10px; }
+    h2.sec { font-size: 24px; }
+  }
+  @media print {
+    header.hero { background: #fff; color: #000; }
+    nav.toc { box-shadow: none; }
+    .step, .card, table.cmp { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>1С 8.3: как создавать отчёты</h1>
+    <p class="sub">Учебник для пятого класса — простыми словами, шаг за шагом, со скриншотами.</p>
+    <div class="badges">
+      <span class="badge">📘 Учебник</span>
+      <span class="badge">🖥 Конфигуратор</span>
+      <span class="badge">👤 Пользовательский режим</span>
+      <span class="badge">🧩 СКД и мастер отчёта</span>
+    </div>
+    <img class="cover" src="assets/img/00-hero.png" alt="Школьник за компьютером создаёт отчёт с диаграммой и таблицей">
+  </div>
+</header>
+
+<nav class="toc wrap">
+  <h2>📚 Содержание</h2>
+  <ol>
+    <li><a href="#what">Что такое отчёт?</a></li>
+    <li><a href="#modes">Два режима 1С: две двери</a></li>
+    <li><a href="#plan">Наш план: отчёт «Остатки товаров»</a></li>
+    <li><a href="#part1">Часть 1. Отчёт в Конфигураторе</a></li>
+    <li><a href="#part2">Часть 2. Отчёт в пользовательском режиме</a></li>
+    <li><a href="#types">Три вида отчётов</a></li>
+    <li><a href="#tips">Советы бывалого</a></li>
+    <li><a href="#tasks">Задания и мини-тест</a></li>
+    <li><a href="#glossary">Словарик</a></li>
+  </ol>
+</nav>
+
+<main class="wrap">
+
+  <!-- ============ 1. Что такое отчёт ============ -->
+  <section id="what">
+    <h2 class="sec">1. Что такое отчёт?</h2>
+    <p class="lead">Отчёт — это готовый ответ на вопрос, который ты задал компьютеру.</p>
+    <p>Представь классный журнал. Учитель видит все оценки сразу: кто отличник, кто двоечник. Отчёт в 1С делает то же самое, только для работы: считает товар на складе, деньги в кассе, посетителей в библиотеке.</p>
+    <div class="cards">
+      <div class="card blue">
+        <div class="emoji">📊</div>
+        <h3>Таблица</h3>
+        <p>Строки и столбцы. Например: <em>Товар — Количество — Сумма</em>. Самый частый вид отчёта.</p>
+      </div>
+      <div class="card green">
+        <div class="emoji">📈</div>
+        <h3>Диаграмма</h3>
+        <p>Красивые столбики или кривые. Сразу видно, где больше, а где меньше.</p>
+      </div>
+      <div class="card orange">
+        <div class="emoji">🧮</div>
+        <h3>Итоги</h3>
+        <p>Главное число в конце: сколько всего товаров, сколько всего денег.</p>
+      </div>
+    </div>
+    <div class="tip">
+      <strong>💡 Зачем это нужно?</strong>
+      1С считает сама — быстро и без ошибок. Без отчёта пришлось бы считать всё на бумаге, как сто лет назад!
+    </div>
+  </section>
+
+  <!-- ============ 2. Два режима ============ -->
+  <section id="modes">
+    <h2 class="sec">2. Два режима 1С: две двери</h2>
+    <p class="lead">В 1С 8.3 есть два «режима». Это как две двери в одну школу: в одной учителя готовят уроки, в другой проходит урок.</p>
+
+    <div class="cards">
+      <div class="card blue">
+        <div class="emoji">🔧</div>
+        <h3>Конфигуратор</h3>
+        <p><strong>Мастерская программиста.</strong> Здесь отчёт <em>создают и настраивают</em>: рисуют формы, собирают данные. Этим занимаются разработчики — но ты тоже можем заглянуть!</p>
+      </div>
+      <div class="card green">
+        <div class="emoji">👤</div>
+        <h3>1С:Предприятие</h3>
+        <p><strong>Витрина для пользователя.</strong> Здесь отчёт <em>используют</em>: выбирают период, нажимают «Сформировать», печатают. Обычные работники сидят именно здесь.</p>
+      </div>
+    </div>
+
+    <figure>
+      <img src="assets/img/01-start-window.png" alt="Окно запуска 1С 8.3 с двумя кнопками: 1С:Предприятие и Конфигуратор">
+      <figcaption>Окно запуска 1С 8.3. Две кнопки — две двери: «1С:Предприятие» (пользователь) и «Конфигуратор» (программист).</figcaption>
+    </figure>
+
+    <table class="cmp">
+      <tr>
+        <th>Что сравниваем</th>
+        <th>🔧 Конфигуратор</th>
+        <th>👤 1С:Предприятие</th>
+      </tr>
+      <tr>
+        <td><strong>Кто пользуется</strong></td>
+        <td>Программисты (и ты — на уроке!)</td>
+        <td>Обычные пользователи</td>
+      </tr>
+      <tr>
+        <td><strong>Что делают с отчётом</strong></td>
+        <td>Создают, рисуют форму, настраивают данные</td>
+        <td>Открывают, настраивают отбор, формируют и печатают</td>
+      </tr>
+      <tr>
+        <td><strong>Можно ли «сломать»</strong></td>
+        <td>Да, если нажимать не то — будь осторожен</td>
+        <td>Нет: здесь почти всё защищено</td>
+      </tr>
+      <tr>
+        <td><strong>Главное слово</strong></td>
+        <td>«Создать»</td>
+        <td>«Сформировать»</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <strong>📌 Запомни главное правило:</strong>
+      сначала отчёт <strong>строят в Конфигураторе</strong>, потом им <strong>пользуются в 1С:Предприятии</strong>. Как дом: сначала архитектор строит, потом в доме живут.
+    </div>
+  </section>
+
+  <!-- ============ 3. План ============ -->
+  <section id="plan">
+    <h2 class="sec">3. Наш план: отчёт «Остатки товаров»</h2>
+    <p class="lead">За учебник мы сделаем один и тот же отчёт двумя способами. Он отвечает на вопрос: <strong>«Сколько какого товара осталось на складе и сколько это стоит?»</strong></p>
+    <table class="cmp">
+      <tr>
+        <th>Столбец отчёта</th>
+        <th>Что означает</th>
+        <th>Пример</th>
+      </tr>
+      <tr><td><strong>Товар</strong></td><td>Название</td><td>Молоко</td></tr>
+      <tr><td><strong>Количество</strong></td><td>Сколько штук</td><td>10</td></tr>
+      <tr><td><strong>Сумма</strong></td><td>Количество × Цена</td><td>550 руб.</td></tr>
+    </table>
+    <div class="cards">
+      <div class="card blue"><span class="emoji">🔧</span> <h3>Часть 1</h3><p>Создаём отчёт <strong>в Конфигураторе</strong>: дерево объектов, форма, данные (СКД).</p></div>
+      <div class="card green"><span class="emoji">👤</span> <h3>Часть 2</h3><p>Пользуемся отчётом <strong>в 1С:Предприятии</strong>: мастер, «Сформировать», диаграмма, печать.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. Часть 1 ============ -->
+  <section id="part1">
+    <h2 class="sec">4. Часть 1. Отчёт в Конфигураторе</h2>
+    <p class="lead">Внимание: сейчас мы в «мастерской». Здесь рождаются отчёты. Не бойся — шаг за шагом всё получится!</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Открываем Конфигуратор</h3>
+        <p>Запусти 1С 8.3. В окне запуска нажми кнопку <strong>«Конфигуратор»</strong> (серую). Откроется окно с большим деревом — это дерево всей «начинки» программы.</p>
+        <figure>
+          <img src="assets/img/01-start-window.png" alt="Кнопка Конфигуратор в окне запуска 1С">
+          <figcaption>Шаг 1. Выбираем «Конфигуратор» — дверь в мастерскую.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>В дереве находим раздел «Отчёты»</h3>
+        <p>Слева в дереве найди папку <strong>«Отчёты»</strong>. Нажми на неё <strong>правой кнопкой мыши</strong> → выбери <strong>«Добавить»</strong>. Появится новый отчёт — например, с именем <code>Отчёт1</code>.</p>
+        <p>Сразу переименуй его в <code>МойОтчёт</code> и впиши синоним (человеческое название) <strong>«Остатки товаров»</strong>.</p>
+        <figure>
+          <img src="assets/img/02-configurator-tree.png" alt="Дерево Конфигуратора, раздел Отчёты, контекстное меню Добавить">
+          <figcaption>Шаг 2. Правой кнопкой по папке «Отчёты» → «Добавить».</figcaption>
+        </figure>
+        <div class="tip">
+          <strong>💡 Что такое «имя» и «синоним»?</strong>
+          <em>Имя</em> — «кодовое имя» для программы (латиницей, без пробелов: <code>МойОтчёт</code>). <em>Синоним</em> — название для людей (можно по-русски: «Остатки товаров»).
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Рисуем форму отчёта</h3>
+        <p>Открой основную форму нового отчёта — перед тобой появится «холст» и палитра элементов. Перетащи на форму:</p>
+        <p>• <strong>ТабличныйДокумент</strong> — большое белое поле, где будет жить сама таблица;<br>
+           • <strong>Кнопку</strong> с подписью «Сформировать»;<br>
+           • <strong>Декорацию</strong> (надпись) «Остатки товаров» — заголовок.</p>
+        <figure>
+          <img src="assets/img/03-form-editor.png" alt="Редактор формы отчёта в Конфигураторе: палитра элементов, холст формы, свойства">
+          <figcaption>Шаг 3. Редактор формы: слева палитра, в центре холст, справа свойства.</figcaption>
+        </figure>
+        <div class="note">
+          <strong>📌 Правило «трёх мышей»:</strong>
+          <em>выбрать</em> элемент в палитре → <em>нарисовать</em> его на холсте → <em>переименовать</em> в свойствах справа (например, кнопку назвать <code>КнопкаСформировать</code>).
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Готовим данные: конструктор СКД</h3>
+        <p>Теперь — «кухня» отчёта. У отчёта включается <strong>схема компоновки данных</strong> (сокращённо <strong>СКД</strong>). Это как рецепт: из чего и как варить отчёт.</p>
+        <p>Открой конструктор и добавь:</p>
+        <p>• <strong>Поля</strong> (что показываем): Товар, Количество, Цена;<br>
+           • <strong>Группировку</strong>: по полю «Товар»;<br>
+           • <strong>Ресурс</strong> (что считаем): <code>Сумма = Количество × Цена</code>.</p>
+        <figure>
+          <img src="assets/img/04-skd-designer.png" alt="Конструктор схемы компоновки данных: наборы данных, группировка, поля, ресурсы">
+          <figcaption>Шаг 4. Конструктор СКД: слева поля, в центре группировка, справа ресурсы.</figcaption>
+        </figure>
+        <div class="tip">
+          <strong>💡 Аналогия для пятого класса:</strong>
+          СКД — как рецепт пирога. Поля — ингредиенты, группировка — «разложить по слоям», ресурс — «получить итоговый вес пирога».
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Сохраняем и обновляем базу</h3>
+        <p>Всё настроено? Нажми <kbd>Ctrl</kbd> + <kbd>S</kbd> (или меню <strong>Файл → Сохранить конфигурацию</strong>). Потом запусти режим «1С:Предприятие» — база сама спросит: «Обновить конфигурацию?» → жми <strong>«Да»</strong>.</p>
+        <div class="warn">
+          <strong>⚠️ Осторожно!</strong>
+          Изменения в Конфигураторе видит вся база сразу. Поэтому сохраняй только тогда, когда всё точно готово — и не нажимай незнакомые кнопки.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h3>Проверяем: смотрим отчёт глазами</h3>
+        <p>В 1С:Предприятие открой наш отчёт «Остатки товаров» и нажми кнопку <strong>«Сформировать»</strong>. Если всё верно — появится аккуратная таблица: Товар, Количество, Сумма. 🎉</p>
+        <figure>
+          <img src="assets/img/05-configurator-result.png" alt="Сформированный отчёт Остатки товаров с таблицей и кнопками Сформировать, Печать, Сохранить">
+          <figcaption>Шаг 6. Готово! Кнопка «Сформировать» собрала таблицу из данных.</figcaption>
+        </figure>
+        <p>Если пусто или ошибка — возвращайся в Конфигуратор и проверяй шаги 3–4: все ли поля добавлены, есть ли кнопка «Сформировать».</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. Часть 2 ============ -->
+  <section id="part2">
+    <h2 class="sec">5. Часть 2. Отчёт в пользовательском режиме</h2>
+    <p class="lead">Теперь ты — обычный пользователь. Конфигуратор закрыт, «мастерская» заперта. Осталось только пользоваться готовым отчётом… или создать новый — с помощью мастера!</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Открываем 1С:Предприятие</h3>
+        <p>В окне запуска жми зелёную кнопку <strong>«1С:Предприятие»</strong>. Откроется привычный интерфейс — кнопки, списки, разделы. Здесь ничего не сломается, можно спокойно пробовать.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Идём в раздел «Отчёты»</h3>
+        <p>В меню (слева или на главной) найди раздел <strong>«Отчёты»</strong>. Там лежат готовые отчёты — как книги на полке. Нажми <strong>«Создать»</strong>, чтобы сделать новый.</p>
+        <figure>
+          <img src="assets/img/06-user-reports.png" alt="Интерфейс 1С:Предприятие, раздел Отчёты, кнопка Создать">
+          <figcaption>Шаг 2. Раздел «Отчёты» и кнопка «Создать» — начало работы.</figcaption>
+        </figure>
+        <div class="note">
+          <strong>📌 Где что искать?</strong>
+          В разных конфигурациях кнопки живут в разных местах: «Отчёты» может быть на главной, а может — в меню «Файл → Создать». Если не нашёл — спроси у взрослого, где в <em>твоей</em> версии 1С лежат отчёты.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Проходим мастер отчёта (4 шага)</h3>
+        <p>Мастер — как навигатор в телефоне: он спрашивает по шагам, а ты отвечаешь.</p>
+        <p>• <strong>Шаг 1. Данные</strong> — откуда берём цифры (например, из склада);<br>
+           • <strong>Шаг 2. Поля</strong> — что показать (ставим галочки: Товар, Количество, Цена, Сумма);<br>
+           • <strong>Шаг 3. Группировка</strong> — как разложить (например, по товару);<br>
+           • <strong>Шаг 4. Вид</strong> — таблица или диаграмма.</p>
+        <figure>
+          <img src="assets/img/07-wizard.png" alt="Мастер отчёта: список шагов и галочки напротив полей">
+          <figcaption>Шаг 3. Мастер отчёта: ставим галочки и жмём «Далее».</figcaption>
+        </figure>
+        <p>Нажми <strong>«Готово»</strong> — мастер соберёт отчёт за тебя!</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Настраиваем отборы и жмём «Сформировать»</h3>
+        <p>Вверху отчёта живут <strong>настройки</strong>: период (какие даты), склад, организация. Выбери, например, «за ноябрь 2026» → нажми <strong>«Сформировать»</strong>. Таблица обновится.</p>
+        <figure>
+          <img src="assets/img/08-finished-report.png" alt="Готовый отчёт с панелью настроек: период, склад, кнопка Сформировать">
+          <figcaption>Шаг 4. Сверху — настройки, снизу — результат. Меняй период и жми «Сформировать».</figcaption>
+        </figure>
+        <div class="tip">
+          <strong>💡 Живой пример отбора:</strong>
+          Покажи только <em>Молоко</em> → в поле «Отбор» добавь: Товар = Молоко. Или только дорогие товары: Сумма &gt; 500.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Превращаем таблицу в диаграмму</h3>
+        <p>Хочется красоты? Найди переключатель <strong>«Таблица / Диаграмма»</strong> (или кнопку «Вставить диаграмму»). Столбики сразу покажут: где больше, где меньше. Такие отчёты любят начальники 😄</p>
+        <figure>
+          <img src="assets/img/09-diagram.png" alt="Отчёт в виде столбчатой диаграммы Продажи по месяцам">
+          <figcaption>Шаг 5. Диаграмма «Продажи по месяцам» — цифры стали понятнее.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h3>Печатаем и сохраняем</h3>
+        <p>Отчёт готов? Осталось его «унести с собой»:</p>
+        <p>• <strong>Печать</strong> — значок принтера 🖨 (или <kbd>Ctrl</kbd> + <kbd>P</kbd>);<br>
+           • <strong>Сохранить</strong> — значок 💾 → выбери <em>«Таблица Excel»</em> или <em>«Документ PDF»</em>;<br>
+           • <strong>Внешний отчёт</strong> (файл <code>.epf</code>) — <em>Файл → Открыть → Внешний отчёт</em>: так передают отчёты друг другу, без Конфигуратора.</p>
+        </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. Виды отчётов ============ -->
+  <section id="types">
+    <h2 class="sec">6. Три вида отчётов</h2>
+    <p class="lead">Чтобы не запутаться, запомни три «вида» отчётов в 1С 8.3:</p>
+    <div class="cards">
+      <div class="card blue">
+        <div class="emoji">📦</div>
+        <h3>Встроенный</h3>
+        <p>Живёт внутри конфигурации. Создали в Конфигураторе — все пользователи его видят. Как школьная библиотека: одна на всех.</p>
+      </div>
+      <div class="card green">
+        <div class="emoji">🧳</div>
+        <h3>Внешний (.epf)</h3>
+        <p>Отдельный файл-«чемоданчик». Можно переслать другу или принести на флешке и открыть через <em>Файл → Открыть</em>.</p>
+      </div>
+      <div class="card orange">
+        <div class="emoji">🧩</div>
+        <h3>Отчёт на СКД</h3>
+        <p>Гибкий отчёт: данные описываются «рецептом» (схемой). Пользователь сам двигает поля — как конструктор из деталей.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. Советы ============ -->
+  <section id="tips">
+    <h2 class="sec">7. Советы бывалого</h2>
+    <div class="cards">
+      <div class="card green"><span class="emoji">1️⃣</span><h3>Сначала думай — потом жми</h3><p>Прежде чем нажать «Удалить» в Конфигураторе, спроси: «А точно ли мне это нужно?»</p></div>
+      <div class="card blue"><span class="emoji">2️⃣</span><h3>Сохраняйся часто</h3><p><kbd>Ctrl</kbd>+<kbd>S</kbd> — твой лучший друг. Компьютер может зависнуть, а сохранённое не потеряется.</p></div>
+      <div class="card orange"><span class="emoji">3️⃣</span><h3>Маленькими шагами</h3><p>Не пытайся сделать всё сразу. Один шаг → проверил → следующий шаг.</p></div>
+      <div class="card green"><span class="emoji">4️⃣</span><h3>Читай подписи</h3><p>Все кнопки в 1С подписаны по-русски. Читай — и не заблудишься.</p></div>
+      <div class="card blue"><span class="emoji">5️⃣</span><h3>Ошибка — это нормально</h3><p>Даже программисты ошибаются 10 раз, прежде чем получится. Откати шаг и попробуй снова.</p></div>
+      <div class="card orange"><span class="emoji">6️⃣</span><h3>Сравнивай с образцом</h3><p>Открыл учебник → посмотри на скриншот → сделай то же самое у себя. Сверяй глазами.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 8. Задания ============ -->
+  <section id="tasks">
+    <h2 class="sec">8. Задания и мини-тест</h2>
+    <h3>Практика (сделай руками)</h3>
+
+    <div class="task">
+      <span class="tag">Задание 1 · лёгкое</span>
+      <p>Открой 1С 8.3. Сначала кнопку «Конфигуратор», закрой. Потом кнопку «1С:Предприятие», закрой. <strong>Ответь:</strong> чем отличались два окна?</p>
+    </div>
+
+    <div class="task">
+      <span class="tag">Задание 2 · среднее</span>
+      <p>В Конфигураторе создай отчёт с именем <code>МойПервыйОтчёт</code> и синонимом «Мои оценки». Добавь в него поля: <em>Предмет, Оценка, Дата</em>. Сохрани (<kbd>Ctrl</kbd>+<kbd>S</kbd>).</p>
+    </div>
+
+    <div class="task">
+      <span class="tag">Задание 3 · среднее</span>
+      <p>В 1С:Предприятие пройди мастер отчёта до конца: выбери данные, поставь 3 галочки в полях, выбери вид «Диаграмма», нажми «Готово» и «Сформировать». Сделай скриншот.</p>
+    </div>
+
+    <div class="task">
+      <span class="tag">Задание 4 · творческое</span>
+      <p>Придумай свой отчёт для школьной столовой: «Что кушали в столовой на этой неделе». Напиши 3 столбца и 1 строку-пример. Оформи в тетради.</p>
+    </div>
+
+    <h3>Мини-тест (нажми, чтобы увидеть ответ)</h3>
+
+    <details class="quiz">
+      <summary>❓ Вопрос 1. Где создают новые отчёты: в Конфигураторе или в 1С:Предприятии?</summary>
+      <div class="answer">✅ В <strong>Конфигураторе</strong> — это «мастерская программиста». В 1С:Предприятии отчётом пользуются: настраивают и формируют.</div>
+    </details>
+
+    <details class="quiz">
+      <summary>❓ Вопрос 2. Что нажимают, чтобы отчёт собрался и показал таблицу?</summary>
+      <div class="answer">✅ Кнопку <strong>«Сформировать»</strong>. Она есть и в Конфигураторе (в форме), и в 1С:Предприятии.</div>
+    </details>
+
+    <details class="quiz">
+      <summary>❓ Вопрос 3. Что такое СКД?</summary>
+      <div class="answer">✅ <strong>Схема компоновки данных</strong> — «рецепт» отчёта: какие данные взять, как сгруппировать и что посчитать. Проще говоря, из чего и как готовить отчёт.</div>
+    </details>
+
+    <details class="quiz">
+      <summary>❓ Вопрос 4. Какой файл называют «внешним отчётом»?</summary>
+      <div class="answer">✅ Файл с расширением <code>.epf</code>. Его можно переслать другу и открыть через <em>Файл → Открыть → Внешний отчёт</em>.</div>
+    </details>
+
+    <details class="quiz">
+      <summary>❓ Вопрос 5. Как превратить таблицу отчёта в столбики?</summary>
+      <div class="answer">✅ Переключателем <strong>«Таблица / Диаграмма»</strong> (или кнопкой «Вставить диаграмму») в панели отчёта.</div>
+    </details>
+  </section>
+
+  <!-- ============ 9. Словарик ============ -->
+  <section id="glossary">
+    <h2 class="sec">9. Словарик</h2>
+    <p class="lead">Выучи эти 10 слов — и ты уже не новичок!</p>
+    <dl class="gloss">
+      <div><dt>1С:Предприятие</dt><dd>Режим, где пользователь работает с готовыми данными: открывает документы, справочники и отчёты.</dd></div>
+      <div><dt>Конфигуратор</dt><dd>Режим разработчика: здесь создают и меняют саму конфигурацию — в том числе отчёты.</dd></div>
+      <div><dt>Конфигурация</dt><dd>«Начинка» 1С: все справочники, документы, отчёты и правила одной программы (например, «Бухгалтерия»).</dd></div>
+      <div><dt>Отчёт</dt><dd>Готовый ответ на вопрос: таблица, диаграмма или итоги, собранные из данных.</dd></div>
+      <div><dt>Форма</dt><dd>Экран, на котором показан отчёт: кнопки, надписи и большое поле для таблицы.</dd></div>
+      <div><dt>ТабличныйДокумент</dt><dd>Элемент формы, в котором живёт сама таблица отчёта — сюда «выезжает» результат.</dd></div>
+      <div><dt>СКД (схема компоновки данных)</dt><dd>«Рецепт» отчёта: данные, группировка, ресурсы и оформление.</dd></div>
+      <div><dt>Поле</dt><dd>Одна колонка данных: Товар, Количество, Цена.</dd></div>
+      <div><dt>Ресурс</dt><dd>Число, которое отчёт <em>считает</em>: сумма, количество, итог.</dd></div>
+      <div><dt>Сформировать</dt><dd>Кнопка, после которой отчёт собирается и показывает результат.</dd></div>
+      <div><dt>Внешний отчёт (.epf)</dt><dd>Отдельный файл с отчётом, который можно перенести в другую базу или отправить другу.</dd></div>
+      <div><dt>Отбор</dt><dd>Фильтр: показать только то, что выбрал (например, только молоко или только ноябрь).</dd></div>
+    </dl>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>1С 8.3: как создавать отчёты</strong> — учебник для пятого класса</p>
+  <p>Собрано автоматически с помощью GitHub Actions · <a href="https://github.com/vetan2022-svg/1C">vetan2022-svg/1C</a></p>
+  <p>Улыбайся, кодь и считай вместе с 1С! 🙂</p>
+</footer>
+
+</body>
+</html>
